@@ -52,4 +52,26 @@ void main() {
       expect(protocolMarkupPayload('普通的一句话'), isNull);
     });
   });
+
+  group('file-diff block (seen leaking on device 2026-10-26 12:33)', () {
+    const block = '<file-diff path="/mnt/android/sdcard/mod/smali/com/endfield/hook/AppAttachHook.smali" '
+        'details="Successfully applied AI code to file: /mnt/android/sdcard/mod/smali/com/endfield/hook/AppAttachHook.smali">'
+        '<![CDATA[Changes: +42 -2 lines\n@@ -51,10 +51,50 @@\n 51 |     const-string v1, "g6.b"]]></file-diff>';
+
+    test('is recognized as protocol markup even though it is not in the tag whitelist', () {
+      expect(looksLikeProtocolMarkup(block), isTrue);
+    });
+
+    test('exposes the CDATA payload instead of the raw markup', () {
+      final payload = protocolMarkupPayload(block);
+      expect(payload, isNotNull);
+      expect(payload, contains('Changes: +42 -2 lines'));
+      expect(payload, isNot(contains('<![CDATA[')));
+      expect(payload, isNot(contains('file-diff')));
+    });
+
+    test('an attributed tag is enough even for an unknown tag name', () {
+      expect(looksLikeProtocolMarkup('<some-future-block id="7">body</some-future-block>'), isTrue);
+    });
+  });
 }

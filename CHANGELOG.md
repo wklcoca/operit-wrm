@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 2058 — 基于 `e4e5c96`
+
+### `file-diff` 块整段漏进正文（新）
+
+**现象**（真机截图 2026-10-26 12:33）：正文里直接出现
+
+```
+<file-diff path="/mnt/android/sdcard/mod/smali/…/AppAttachHook.smali"
+  details="Successfully applied AI code to file: …"><![CDATA[Changes: +42 -2 lines
+@@ -51,10 +51,50 @@
+…]]></file-diff>
+```
+
+**机制**：`CustomXmlRenderer` 解析不出块时，旧代码 `return SelectableText(parsed.body.isEmpty ? xmlContent : parsed.body)`
+把原文当普通文本显示。上一版（2056）的修复只认 `tool/tool_result/param/content/…` 白名单，
+**不含 `file-diff`**，于是又漏了。
+
+**修法**：判定改成"标签白名单 **或** 带属性的开标签（`<名字 属性="…">`）"，并新增 CDATA 作为可读负载来源。
+这样渲染层以后再加语义标签也不会再漏。
+
+- 位置：`apps/flutter/app/lib/ui/features/chat/components/part/ProtocolMarkupRecovery.dart`、`CustomXmlRenderer.dart`
+- 测试：`protocol_markup_recovery_test.dart` 8 条（含该 `file-diff` 真实形状），`flutter test` 全过
+- 上游 PR：[#362](https://github.com/AAswordman/Operit2/pull/362)
+
 ## 2056 — 基于 `e4e5c96`
 
 ### `params` 里的字面换行会炸掉整轮（新）
