@@ -51,6 +51,9 @@
 2. **先卸载官方版**（会丢数据，自己权衡）；
 3. `adb install -r operit2-<版本>-*.apk` 或直接点安装。
 
+> 资产上传说明：构建机上 `uploads.github.com` 不可达（`api.github.com` 正常），
+> 所以 APK 可能需要在**能访问 GitHub 上传端点的网络**下、在 Release 页面手动拖拽上传。
+
 ## 怎么自己构建
 
 和上游一致，只是先把补丁放上去：
